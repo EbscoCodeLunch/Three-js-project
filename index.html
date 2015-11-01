@@ -1,104 +1,112 @@
 <!doctype html>
 <html>
 	<head>
-		<meta charset="utf-8" />
 		<title>Donut Racer</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<style>
-			#container {
-				background: #000;
-				width: 640px;
-				height: 480px;
+			body {
+				color: #000;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				font-weight: bold;
+
+				background-color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+	
+			a {
+				color: red;
 			}
 		</style>
 	</head>
 	<body>
+		<div id="container"></div>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+		<script src="js/three.min.js"></script>
+		<script src="js/TrackballControls.js"></script>
 
-		<div id="container">
+		<script type="text/javascript">
 
+		// set the scene size
+		var WIDTH = 640,
+			HEIGHT = 480,
+			VIEW_ANGLE = 45,
+			ASPECT = WIDTH / HEIGHT,
+			NEAR = 0.1,
+			FAR = 10000,
+			container,
+			renderer,
+			camera,
+			scene,
+			controls,
+			carPivot;
 
-		</div>
+		init();
+		animate();
 
+		function init() {
+			camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+			camera.position.z = 300;
+
+			controls = new THREE.TrackballControls(camera);
+
+			scene = new THREE.Scene();
+
+			var ringGeometry = new THREE.RingGeometry(30, 90, 32),
+				ringMaterial = new THREE.MeshBasicMaterial({color: 0x3232ff, side: THREE.DoubleSide}),
+				ring = new THREE.Mesh(ringGeometry, ringMaterial);
+
+			scene.add(ring);
+
+			// Draw the car/box
+			carPivot = new THREE.Object3D();
+			var	carGeometry = new THREE.BoxGeometry(30, 30, 30),
+				carMaterial = new THREE.MeshBasicMaterial({color: 0xFDD001}),
+				car = new THREE.Mesh(carGeometry, carMaterial);
+
+			ring.add(carPivot);
+
+			car.position.y = 55;
+			car.position.z = 15;
+			carPivot.add(car);
+			scene.add(carPivot);
+
+			// and the camera
+			scene.add(camera);
+
+			// create a point light
+			var pointLight = new THREE.PointLight( 0xFFFFFF );
+
+			// set its position
+			pointLight.position.x = 10;
+			pointLight.position.y = 50;
+			pointLight.position.z = 130;
+
+			// add to the scene
+			scene.add(pointLight);
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(WIDTH, HEIGHT);
+
+			container = document.getElementById('container');
+			container.appendChild(renderer.domElement);
+			
+			render();
+		}
+
+		function animate() {
+			carPivot.rotation.z += 0.01;
+			requestAnimationFrame( animate );
+			controls.update();
+			render();
+		}
+		
+		function render() {
+			renderer.render(scene, camera);
+		}
+		</script>
 	</body>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-	<script src="js/three.min.js"></script>
-	<script src="js/TrackballControls.js"></script>
-
-	<script type="text/javascript">
-
-	// set the scene size
-	var WIDTH = 640,
-	    HEIGHT = 480;
-
-	// set some camera attributes
-	var VIEW_ANGLE = 45,
-	    ASPECT = WIDTH / HEIGHT,
-	    NEAR = 0.1,
-	    FAR = 10000;
-
-	// get the DOM element to attach to
-	// - assume we've got jQuery to hand
-	var $container = $('#container');
-
-	// create a WebGL renderer, camera
-	// and a scene
-	var renderer = new THREE.WebGLRenderer(),
-		camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR),
-		scene = new THREE.Scene(),
-		controls = new THREE.TrackballControls(camera, renderer.domElement);
-
-	// the camera starts at 0,0,0 so pull it back
-	camera.position.z = 300;
-
-	// start the renderer
-	renderer.setSize(WIDTH, HEIGHT);
-
-	// attach the render-supplied DOM element
-	$container.append(renderer.domElement);
-
-	// Draw the ring/track
-	var ringGeometry = new THREE.RingGeometry(30, 90, 32),
-		ringMaterial = new THREE.MeshBasicMaterial({color: 0x3232ff, side: THREE.DoubleSide}),
-		ring = new THREE.Mesh(ringGeometry, ringMaterial);
-
-	scene.add(ring);
-
-	// Draw the car/box
-	var	carPivot = new THREE.Object3D(),
-		carGeometry = new THREE.BoxGeometry(30, 30, 30),
-		carMaterial = new THREE.MeshBasicMaterial({color: 0xFDD001}),
-		car = new THREE.Mesh(carGeometry, carMaterial);
-
-	ring.add(carPivot);
-
-	car.position.y = 55;
-	car.position.z = 15;
-	carPivot.add(car);
-	scene.add(carPivot);
-
-	// and the camera
-	scene.add(camera);
-
-	// create a point light
-	var pointLight = new THREE.PointLight( 0xFFFFFF );
-
-	// set its position
-	pointLight.position.x = 10;
-	pointLight.position.y = 50;
-	pointLight.position.z = 130;
-
-	// add to the scene
-	scene.add(pointLight);
-
-	function update() {
-		controls.update();
-		// add some motion to the system
-		carPivot.rotation.z += 0.01;
-
-		renderer.render(scene, camera);
-
-		// set up the next call
-		requestAnimationFrame(update);
-	}
-	requestAnimationFrame(update);
-	</script>
 </html>
