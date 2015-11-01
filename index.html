@@ -24,7 +24,6 @@
 	</head>
 	<body>
 		<div id="container"></div>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 		<script src="js/three.min.js"></script>
 		<script src="js/TrackballControls.js"></script>
 
@@ -36,58 +35,102 @@
 			VIEW_ANGLE = 45,
 			ASPECT = WIDTH / HEIGHT,
 			NEAR = 0.1,
-			FAR = 10000,
-			container,
+			FAR = 10000;
+
+		var	container,
 			renderer,
 			camera,
 			scene,
 			controls,
-			carPivot;
+			spline,
+			numPoints,
+			counter,
+			car;
 
 		init();
 		animate();
 
+		function toRadians (angle) {
+			return angle * (Math.PI / 180);
+		}
+
 		function init() {
+			// camera
 			camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 			camera.position.z = 300;
-
 			controls = new THREE.TrackballControls(camera);
 
+			// scene
 			scene = new THREE.Scene();
 
+			// Ring
 			var ringGeometry = new THREE.RingGeometry(30, 90, 32),
 				ringMaterial = new THREE.MeshBasicMaterial({color: 0x3232ff, side: THREE.DoubleSide}),
 				ring = new THREE.Mesh(ringGeometry, ringMaterial);
 
-			scene.add(ring);
+			//scene.add(ring);
 
-			// Draw the car/box
-			carPivot = new THREE.Object3D();
+			// Spline
+			numPoints = 50;
+			spline = new THREE.ClosedSplineCurve3([
+				new THREE.Vector3(-60, 0, 0),
+				new THREE.Vector3(-Math.cos(toRadians(30)) * 60, Math.sin(toRadians(30)) * 60, 0),
+				new THREE.Vector3(-Math.cos(toRadians(45)) * 60, Math.sin(toRadians(45)) * 60, 0),
+				new THREE.Vector3(-Math.cos(toRadians(60)) * 60, Math.sin(toRadians(60)) * 60, 0),
+				new THREE.Vector3(0, 60, 0),
+				new THREE.Vector3(Math.cos(toRadians(60)) * 60, Math.sin(toRadians(60)) * 60, 0),
+				new THREE.Vector3(Math.cos(toRadians(45)) * 60, Math.sin(toRadians(45)) * 60, 0),
+				new THREE.Vector3(Math.cos(toRadians(30)) * 60, Math.sin(toRadians(30)) * 60, 0),
+				new THREE.Vector3(60, 0, 0),
+				new THREE.Vector3(Math.cos(toRadians(30)) * 60, -Math.sin(toRadians(30)) * 60, 0),
+				new THREE.Vector3(Math.cos(toRadians(45)) * 60, -Math.sin(toRadians(45)) * 60, 0),
+				new THREE.Vector3(Math.cos(toRadians(60)) * 60, -Math.sin(toRadians(60)) * 60, 0),
+				new THREE.Vector3(0, -60, 0),
+				new THREE.Vector3(-Math.cos(toRadians(60)) * 60, -Math.sin(toRadians(60)) * 60, 0),
+				new THREE.Vector3(-Math.cos(toRadians(45)) * 60, -Math.sin(toRadians(45)) * 60, 0),
+				new THREE.Vector3(-Math.cos(toRadians(30)) * 60, -Math.sin(toRadians(30)) * 60, 0),
+			]);
+
+			var lineMaterial = new THREE.LineBasicMaterial({color: 0xff00f0}),
+				lineGeometry = new THREE.Geometry(),
+				splinePoints = spline.getPoints( numPoints ),
+				line;
+			
+			for(var i = 0; i < splinePoints.length; i++){
+				lineGeometry.vertices.push(splinePoints[i]);  
+			}
+			
+			line = new THREE.Line(lineGeometry, lineMaterial);
+			scene.add(line);			
+
+			// Box
 			var	carGeometry = new THREE.BoxGeometry(30, 30, 30),
-				carMaterial = new THREE.MeshBasicMaterial({color: 0xFDD001}),
-				car = new THREE.Mesh(carGeometry, carMaterial);
+				carMaterial;// = new THREE.MeshBasicMaterial({color: 0xFDD001});
+			for ( var i = 0; i < carGeometry.faces.length; i ++ ) {
+				carGeometry.faces[ i ].color.setHex( Math.random() * 0xffffff );
+			}
 
-			ring.add(carPivot);
+			carMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors } );	
+			
+			car = new THREE.Mesh(carGeometry, carMaterial);
 
 			car.position.y = 55;
 			car.position.z = 15;
-			carPivot.add(car);
-			scene.add(carPivot);
+			scene.add(car);
 
 			// and the camera
 			scene.add(camera);
 
-			// create a point light
+			// Light
 			var pointLight = new THREE.PointLight( 0xFFFFFF );
 
-			// set its position
 			pointLight.position.x = 10;
 			pointLight.position.y = 50;
 			pointLight.position.z = 130;
 
-			// add to the scene
 			scene.add(pointLight);
 
+			// Renderer
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(WIDTH, HEIGHT);
 
@@ -97,8 +140,22 @@
 			render();
 		}
 
+		function moveBox() {
+			if (counter <= 1) {
+				car.position.x = spline.getPoint(counter).x;
+				car.position.y = spline.getPoint(counter).y;
+				car.position.z = spline.getPoint(counter).z;
+				//car.rotation.x = spline.getTangent(counter).x;
+				//car.rotation.y = spline.getTangent(counter).y;
+				car.rotation.z = spline.getTangent(counter).z;
+				counter += 0.005
+			} else {
+				counter = 0;
+			}
+		}
+
 		function animate() {
-			carPivot.rotation.z += 0.01;
+			moveBox();
 			requestAnimationFrame( animate );
 			controls.update();
 			render();
