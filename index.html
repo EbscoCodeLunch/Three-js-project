@@ -73,16 +73,16 @@
 			// Spline
 			numPoints = 50;
 			spline = new THREE.ClosedSplineCurve3([
-				new THREE.Vector3(-60, 0, 0),
+				new THREE.Vector3(-60, 0, 60 / Math.sin(toRadians(45))),
 				//new THREE.Vector3(-Math.cos(toRadians(45)) * 60, Math.sin(toRadians(45)) * 60, 0),
 				new THREE.Vector3(-60 / Math.cos(toRadians(45)), 60 / Math.sin(toRadians(45)), 0),
-				new THREE.Vector3(0, 60, 0),
+				new THREE.Vector3(0, 60, 60 / Math.sin(toRadians(45))),
 				//new THREE.Vector3(Math.cos(toRadians(45)) * 60, Math.sin(toRadians(45)) * 60, 0),
 				new THREE.Vector3(60 / Math.cos(toRadians(45)), 60 / Math.sin(toRadians(45)), 0),
-				new THREE.Vector3(60, 0, 0),
+				new THREE.Vector3(60, 0, 60 / Math.sin(toRadians(45))),
 				//new THREE.Vector3(Math.cos(toRadians(45)) * 60, -Math.sin(toRadians(45)) * 60, 0),
 				new THREE.Vector3(60 / Math.cos(toRadians(45)), -60 / Math.sin(toRadians(45)), 0),
-				new THREE.Vector3(0, -60, 0),
+				new THREE.Vector3(0, -60, 60 / Math.sin(toRadians(45))),
 				//new THREE.Vector3(-Math.cos(toRadians(45)) * 60, -Math.sin(toRadians(45)) * 60, 0),
 				new THREE.Vector3(-60 / Math.cos(toRadians(45)), -60 / Math.sin(toRadians(45)), 0),
 			]);
