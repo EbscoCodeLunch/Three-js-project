@@ -16,7 +16,7 @@
 				margin: 0px;
 				overflow: hidden;
 			}
-	
+
 			a {
 				color: red;
 			}
@@ -53,40 +53,6 @@
 		function toRadians (angle) {
 			return angle * (Math.PI / 180);
 		}
-
-		function getHeightData(img, scale) {
-			var canvas = document.createElement('canvas'),
-				context,
-				size,
-				data;
-		  
-		 	if (scale == undefined) scale = 1;
-		
-			canvas.width = img.width;
-			canvas.height = img.height;
-			
-			context = canvas.getContext('2d');
-			
-			size = img.width * img.height;
-			data = new Float32Array(size);
-			
-			context.drawImage(img,0,0);
-			
-			for (var i = 0; i < size; i ++) {
-			    data[i] = 0
-			}
-			
-			var imgd = context.getImageData(0, 0, img.width, img.height),
-				pix = imgd.data;
-			
-			var j=0;
-			for (var i = 0; i<pix.length; i +=4) {
-				var all = pix[i]+pix[i+1]+pix[i+2];
-				data[j++] = all/(12*scale);
-			}
-			 
-			return data;
-		}		
 
 		function init() {
 			// camera
@@ -125,13 +91,13 @@
 				lineGeometry = new THREE.Geometry(),
 				splinePoints = spline.getPoints( numPoints ),
 				line;
-			
+
 			for(var i = 0; i < splinePoints.length; i++){
-				lineGeometry.vertices.push(splinePoints[i]);  
+				lineGeometry.vertices.push(splinePoints[i]);
 			}
-			
+
 			line = new THREE.Line(lineGeometry, lineMaterial);
-			scene.add(line);			
+			scene.add(line);
 
 			// Box
 			// It now randomly generates colors. For visibility
@@ -141,46 +107,19 @@
 				carGeometry.faces[ i ].color.setHex( Math.random() * 0xffffff );
 			}
 
-			carMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors } );	
-			
+			carMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors } );
+
 			car = new THREE.Mesh(carGeometry, carMaterial);
 
 			car.position.y = 55;
 			car.position.z = 15;
 			scene.add(car);
 
-			/* ---------------------------------------- */
-			var img = new Image();
-			img.onload = function () {
-				
-				//get height data from img
-				var data = getHeightData(img),				
-				// plane
-					planeGeometry = new THREE.PlaneGeometry(250, 250, 9, 9),
-					planeTexture = THREE.ImageUtils.loadTexture('map.png'),
-					planeMaterial = new THREE.MeshLambertMaterial({ map: planeTexture }),
-					plane = new THREE.Mesh(planeGeometry, planeMaterial);
-				 
-				//set height of vertices
-				for ( var i = 0; i<plane.geometry.vertices.length; i++ ) {
-					plane.geometry.vertices[i].z += (data[i] / 255) * 200;
-				}
-
-				plane.rotation.x = toRadians(-90);
-				plane.position.y = -30;
-				plane.position.z = 30;
-				console.log(plane.position);
-				scene.add(plane);				
-			};
-			// load img source
-			img.src = 'map.png';
-			/* ---------------------------------------- */
-
 			// and the camera
 			scene.add(camera);
 
 			// Light
-			var pointLight = new THREE.PointLight( 0xFFFFFF );
+			var pointLight = pointLight2 = new THREE.PointLight( 0xFFFFFF );
 
 			pointLight.position.x = 10;
 			pointLight.position.y = 50;
@@ -194,7 +133,7 @@
 
 			container = document.getElementById('container');
 			container.appendChild(renderer.domElement);
-			
+
 			render();
 		}
 
@@ -218,7 +157,7 @@
 			controls.update();
 			render();
 		}
-		
+
 		function render() {
 			renderer.render(scene, camera);
 		}
