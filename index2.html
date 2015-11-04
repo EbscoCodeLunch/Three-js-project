@@ -92,6 +92,7 @@
 			// camera
 			camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 			camera.position.z = 800;
+			camera.position.x = 500;
 			controls = new THREE.TrackballControls(camera);
 
 			// scene
@@ -134,7 +135,7 @@
 			scene.add(camera);
 
 			// Light
-			var pointLight = pointLight2 = new THREE.PointLight( 0xFFFFFF );
+			var pointLight = pointLight2 = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
 
 			pointLight.position.x = 10;
 			pointLight.position.y = 50;
