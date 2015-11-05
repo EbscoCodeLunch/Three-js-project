@@ -97,6 +97,32 @@
 			// scene
 			scene = new THREE.Scene();
 
+			// Skybox example: https://stemkoski.github.io/Three.js/Skybox.html
+			var path = './skybox/',
+				fileType = '.png',
+				urls = [
+					path + 'px' +  fileType,
+					path + 'nx' +  fileType,
+					path + 'py' +  fileType,
+					path + 'ny' +  fileType,
+					path + 'pz' +  fileType,
+					path + 'nz' +  fileType,
+				],
+				skyGeometry = new THREE.CubeGeometry(5000, 5000, 5000),
+				skyMaterial,
+				skyBox,
+				materialArray = [];
+
+			for(var i = 0; i<6; i++) {
+				materialArray.push(new THREE.MeshBasicMaterial({
+					map: THREE.ImageUtils.loadTexture(urls[i]),
+					side: THREE.BackSide
+				}));
+			}
+			skyMaterial = new THREE.MeshFaceMaterial(materialArray);
+			skyBox = new THREE.Mesh(skyGeometry, skyMaterial);
+			scene.add(skyBox);
+
 			var img = new Image();
 			img.onload = function () {
 
