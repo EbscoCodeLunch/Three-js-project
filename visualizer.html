@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Visualizer</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #000;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				font-weight: bold;
+
+				background-color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			a {
+				color: red;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container"></div>
+		<script src="js/three.min.js"></script>
+		<script src="js/TrackballControls.js"></script>
+
+		<script type="text/javascript">
+
+			var context;
+			var source, sourceJs;
+			var analyser;
+			var buffer;
+			var boost = 0;
+			var url = './audio/safe_and_sound.mp3';
+			var array = new Array();
+
+			try {
+				if(typeof webkitAudioContext === 'function') { // webkit-based
+					context = new webkitAudioContext();
+				}
+				else { // other browsers that support AudioContext
+					context = new AudioContext();
+				}
+			}
+			catch(e) {
+				// Web Audio API is not supported in this browser
+				alert("Web Audio API is not supported in this browser");
+			}			
+
+			var request = new XMLHttpRequest();
+			request.open('GET', url, true);
+			request.responseType = "arraybuffer";
+
+			request.onload = function() {
+				context.decodeAudioData(
+					request.response,
+					function(buffer) {
+						if(!buffer) {
+							// Error decoding file data
+							return;
+						}
+
+						sourceJs = context.createScriptProcessor(2048, 1, 1);
+						sourceJs.buffer = buffer;
+						sourceJs.connect(context.destination);
+						analyser = context.createAnalyser();
+						analyser.smoothingTimeConstant = 0.6;
+						analyser.fftSize = 512;	
+										
+
+						source = context.createBufferSource();
+						source.buffer = buffer;
+
+						source.connect(analyser);
+						analyser.connect(sourceJs);
+						source.connect(context.destination);
+
+						sourceJs.onaudioprocess = function(e) {
+							array = new Uint8Array(analyser.frequencyBinCount);
+							analyser.getByteFrequencyData(array);
+							boost = 0;
+							for (var i = 0; i < array.length; i++) {
+					            boost += array[i];
+					        }
+					        boost = boost / array.length;
+					    };
+						source.start(0);
+					},
+
+					function(error) {
+						// Decoding error
+					}
+				);
+			};
+			request.send();
+
+
+			// set the scene size
+			var WIDTH = 640,
+				HEIGHT = 480,
+				VIEW_ANGLE = 45,
+				ASPECT = WIDTH / HEIGHT,
+				NEAR = 0.1,
+				FAR = 10000;
+
+			var	container,
+				renderer,
+				camera,
+				scene,
+				controls,
+				plane,
+				scale;
+
+			init();
+			animate();
+
+			function toRadians (angle) {
+				return angle * (Math.PI / 180);
+			}
+
+			function init() {
+				// camera
+				camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+				camera.position.x = 118;
+				camera.position.y = 300;
+				camera.position.z = 260;
+				controls = new THREE.TrackballControls(camera);
+
+				// scene
+				scene = new THREE.Scene();
+
+				var planeGeometry = new THREE.PlaneGeometry(256, 256, 63, 63),
+					planeMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true});
+				plane = new THREE.Mesh(planeGeometry, planeMaterial);
+				plane.rotation.x = toRadians(90);
+				scene.add(plane);
+				planeGeometry.computeFaceNormals();
+				planeGeometry.computeVertexNormals();
+
+				// and the camera
+				scene.add(camera);
+
+				var pointLight = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+
+				pointLight.position.x = 10;
+				pointLight.position.y = 50;
+				pointLight.position.z = 130;
+
+				scene.add(pointLight);
+				// Renderer
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(WIDTH, HEIGHT);
+
+				container = document.getElementById('container');
+				container.appendChild(renderer.domElement);
+
+				render();
+			}
+
+			function animate() {
+				var vLength = plane.geometry.vertices.length;
+				for ( var i = 0; i<vLength; i+= 16) {
+					var v = plane.geometry.vertices[i];
+					v.z = -Math.sin(array[i%16] / 30 + (v.x * (vLength / 2)) * (v.y / (vLength / 2))) * 3 + 5;
+				}
+
+				plane.geometry.verticesNeedUpdate = true
+
+				requestAnimationFrame( animate );
+				controls.update();
+				render();
+			}
+
+			function render() {
+				renderer.render(scene, camera);
+			}
+
+
+
+		</script>
+	</body>
+</html>
