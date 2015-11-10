@@ -1,0 +1,57 @@
+function init() {
+				// camera
+				camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+				camera.position.x = 118;
+				camera.position.y = 300;
+				camera.position.z = 260;
+				controls = new THREE.TrackballControls(camera);
+
+				// scene
+				scene = new THREE.Scene();
+
+				var planeGeometry = new THREE.PlaneGeometry(256, 256, 63, 63),
+					planeMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true});
+				plane = new THREE.Mesh(planeGeometry, planeMaterial);
+				plane.rotation.x = toRadians(90);
+				scene.add(plane);
+				planeGeometry.computeFaceNormals();
+				planeGeometry.computeVertexNormals();
+
+				// and the camera
+				scene.add(camera);
+
+				var pointLight = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+
+				pointLight.position.x = 10;
+				pointLight.position.y = 50;
+				pointLight.position.z = 130;
+
+				scene.add(pointLight);
+				// Renderer
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(WIDTH, HEIGHT);
+
+				container = document.getElementById('container');
+				container.appendChild(renderer.domElement);
+
+				render();
+			}
+
+			function animate(timeStamp) {
+				var center = new THREE.Vector2(0,0);
+				var vLength = plane.geometry.vertices.length;
+				console.log(array[15],array[55],array[105],array[185])
+				for (var i = 0; i < vLength; i++) {
+					var v = plane.geometry.vertices[i];
+					var dist = new THREE.Vector2(v.x, v.y).sub(center);
+					var size = 5.0;
+					var magnitude = 2.0;
+					v.z = Math.sin(dist.length()/size + (timeStamp/500)) * array[i%16]/10;
+				}
+
+				plane.geometry.verticesNeedUpdate = true
+
+				requestAnimationFrame(animate);
+				controls.update();
+				render();
+			}

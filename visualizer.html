@@ -34,7 +34,14 @@
 			var analyser;
 			var buffer;
 			var boost = 0;
-			var url = './audio/safe_and_sound.mp3';
+			var tracks = [
+				'Out_of_My_League.mp3',
+				'the_walker.m4a',
+				'safe_and_sound.mp3',
+				'rather_be.mp3',
+				'pray_to_god.mp3',
+			]
+			var url = './audio/' + tracks[4];
 			var array = new Array();
 
 			try {
@@ -99,8 +106,8 @@
 
 
 			// set the scene size
-			var WIDTH = 640,
-				HEIGHT = 480,
+			var WIDTH = window.innerWidth,
+				HEIGHT = 768,
 				VIEW_ANGLE = 45,
 				ASPECT = WIDTH / HEIGHT,
 				NEAR = 0.1,
@@ -112,7 +119,8 @@
 				scene,
 				controls,
 				plane,
-				scale;
+				scale,
+				bars = [];;
 
 			init();
 			animate();
@@ -124,21 +132,32 @@
 			function init() {
 				// camera
 				camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-				camera.position.x = 118;
-				camera.position.y = 300;
-				camera.position.z = 260;
+				camera.position.x = 0;
+				camera.position.y = 0;
+				camera.position.z = 0;
+				camera.lookAt
 				controls = new THREE.TrackballControls(camera);
+				controls.target = new THREE.Vector3(96, 0, 0)
 
 				// scene
 				scene = new THREE.Scene();
 
-				var planeGeometry = new THREE.PlaneGeometry(256, 256, 63, 63),
-					planeMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true});
-				plane = new THREE.Mesh(planeGeometry, planeMaterial);
-				plane.rotation.x = toRadians(90);
-				scene.add(plane);
-				planeGeometry.computeFaceNormals();
-				planeGeometry.computeVertexNormals();
+				for(var i=0; i<128;i++) {
+					var geometry = new THREE.CubeGeometry(.75, 1, 1),
+						material;
+
+					geometry.faces.forEach(function(face) {
+						face.color.setHex( Math.random() * 0xffffff );
+					});
+
+					material = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors } );
+	
+					
+					bars[i] = new THREE.Mesh(geometry, material);
+					bars[i].position.x = i * 1.5;
+
+					scene.add(bars[i]);
+				}
 
 				// and the camera
 				scene.add(camera);
@@ -160,16 +179,12 @@
 				render();
 			}
 
-			function animate() {
-				var vLength = plane.geometry.vertices.length;
-				for ( var i = 0; i<vLength; i+= 16) {
-					var v = plane.geometry.vertices[i];
-					v.z = -Math.sin(array[i%16] / 30 + (v.x * (vLength / 2)) * (v.y / (vLength / 2))) * 3 + 5;
+			function animate(timeStamp) {
+				for (var i = 0; i < bars.length; i++) {
+					bars[i].scale.z = (array[i%128] + boost)/30;
 				}
 
-				plane.geometry.verticesNeedUpdate = true
-
-				requestAnimationFrame( animate );
+				requestAnimationFrame(animate);
 				controls.update();
 				render();
 			}
